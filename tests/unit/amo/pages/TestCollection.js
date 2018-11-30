@@ -55,7 +55,7 @@ import {
 
 describe(__filename, () => {
   const defaultCollectionDetail = createFakeCollectionDetail();
-  const defaultUser = defaultCollectionDetail.author.username;
+  const defaultUser = defaultCollectionDetail.author.id;
   const defaultSlug = defaultCollectionDetail.slug;
 
   const getProps = ({ ...otherProps } = {}) => ({
@@ -574,7 +574,7 @@ describe(__filename, () => {
 
   it('renders a collection', () => {
     const slug = 'some-slug';
-    const userId = 'some-username';
+    const userId = 1234;
     const page = 2;
     const sort = COLLECTION_SORT_NAME;
     const queryParams = { page, collection_sort: sort };
@@ -656,14 +656,14 @@ describe(__filename, () => {
 
   it('renders a collection with pagination', () => {
     const slug = 'some-slug';
-    const userId = 'some-username';
+    const userId = 123;
     const page = 2;
     const filters = { page, collection_sort: COLLECTION_SORT_NAME };
 
     const { store } = dispatchClientMetadata();
 
     const detail = createFakeCollectionDetail({
-      authorUsername: userId,
+      authorId: userId,
       count: 10,
       slug,
     });
@@ -735,7 +735,7 @@ describe(__filename, () => {
     const { store } = dispatchClientMetadata();
     const addons = createFakeCollectionAddons();
     const detail = createFakeCollectionDetail({
-      authorUsername: userId,
+      authorId: userId,
       slug,
     });
     const collection = createInternalCollection({
@@ -769,18 +769,17 @@ describe(__filename, () => {
   });
 
   it('renders a collection for editing', () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const signedUserId = 11;
+    const { store } = dispatchSignInActions({ userId: signedUserId });
 
     const slug = 'some-slug';
-    const userId = 'some-username';
+    const userId = signedUserId + 123;
     const page = 2;
     const sort = COLLECTION_SORT_NAME;
 
     const addons = createFakeCollectionAddons();
     const detail = createFakeCollectionDetail({
-      authorId: authorUserId,
-      authorUsername: userId,
+      authorId: userId,
       count: 10,
       slug,
     });
@@ -943,13 +942,13 @@ describe(__filename, () => {
   });
 
   it('renders a delete button when user is the collection owner', () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const authorId = 11;
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     _loadCurrentCollection({
       store,
       detail: createFakeCollectionDetail({
-        authorId: authorUserId,
+        authorId,
       }),
     });
 
@@ -958,8 +957,8 @@ describe(__filename, () => {
   });
 
   it('does not render a delete button when user is not the collection owner', () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const authorId = 11;
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     _loadCurrentCollection({
       store,
@@ -973,13 +972,13 @@ describe(__filename, () => {
   });
 
   it('passes the correct editing flag to AddonsCard when editing', () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const authorId = 11;
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     _loadCurrentCollection({
       store,
       detail: createFakeCollectionDetail({
-        authorId: authorUserId,
+        authorId,
       }),
     });
 
@@ -989,17 +988,17 @@ describe(__filename, () => {
   });
 
   it('renders a CollectionAddAddon component when editing', () => {
-    const authorUserId = 11;
+    const authorId = 11;
     const page = 2;
     const sort = COLLECTION_SORT_NAME;
     const queryParams = { page, collection_sort: sort };
     const pageSize = DEFAULT_API_PAGE_SIZE;
     const filters = { collectionSort: sort, page };
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     const addons = createFakeCollectionAddons();
     const detail = createFakeCollectionDetail({
-      authorId: authorUserId,
+      authorId,
     });
     const collection = createInternalCollection({
       detail,
@@ -1057,13 +1056,13 @@ describe(__filename, () => {
   });
 
   it('does not update the page when removeAddon is called and there are still addons to show on the current page', () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const authorId = 11;
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     const addons = createFakeCollectionAddons();
     const addonId = addons[0].addon.id;
     const detail = createFakeCollectionDetail({
-      authorId: authorUserId,
+      authorId,
       // This will simulate a few items on the 2nd page.
       count: DEFAULT_API_PAGE_SIZE + 2,
     });
@@ -1113,13 +1112,13 @@ describe(__filename, () => {
   });
 
   it("does not update the page when removeAddon is called and the current page isn't the last page", () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const authorId = 11;
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     const addons = createFakeCollectionAddons();
     const addonId = addons[0].addon.id;
     const detail = createFakeCollectionDetail({
-      authorId: authorUserId,
+      authorId,
       // This will simulate 1 item on the 3nd page.
       count: DEFAULT_API_PAGE_SIZE * 2 + 1,
     });
@@ -1169,13 +1168,13 @@ describe(__filename, () => {
   });
 
   it('updates the page when removeAddon removes the last addon from the current page', () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const authorId = 11;
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     const addons = createFakeCollectionAddons();
     const addonId = addons[0].addon.id;
     const detail = createFakeCollectionDetail({
-      authorId: authorUserId,
+      authorId,
       // This will simulate only 1 item on the 2nd page.
       count: DEFAULT_API_PAGE_SIZE + 1,
     });
@@ -1232,16 +1231,16 @@ describe(__filename, () => {
   });
 
   it('dispatches deleteCollection when onDelete is called', () => {
-    const authorUserId = 11;
+    const authorId = 11;
     const slug = 'some-slug';
     const userId = 'some-username';
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     store.dispatch(
       loadCurrentCollection({
         addons: createFakeCollectionAddons(),
         detail: createFakeCollectionDetail({
-          authorId: authorUserId,
+          authorId,
           authorUsername: userId,
           slug,
         }),
@@ -1274,13 +1273,13 @@ describe(__filename, () => {
   });
 
   it('dispatches deleteCollectionAddonNotes when deleteNote is called', () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const authorId = 11;
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     const addons = createFakeCollectionAddons();
     const addonId = addons[0].addon.id;
     const detail = createFakeCollectionDetail({
-      authorId: authorUserId,
+      authorId,
     });
     const errorHandler = createStubErrorHandler();
     const fakeDispatch = sinon.spy(store, 'dispatch');
@@ -1321,13 +1320,13 @@ describe(__filename, () => {
   });
 
   it('dispatches updateCollectionAddon when saveNote is called', () => {
-    const authorUserId = 11;
-    const { store } = dispatchSignInActions({ userId: authorUserId });
+    const authorId = 11;
+    const { store } = dispatchSignInActions({ userId: authorId });
 
     const addons = createFakeCollectionAddons();
     const addonId = addons[0].addon.id;
     const detail = createFakeCollectionDetail({
-      authorId: authorUserId,
+      authorId,
     });
     const errorHandler = createStubErrorHandler();
     const fakeDispatch = sinon.spy(store, 'dispatch');
@@ -1368,16 +1367,20 @@ describe(__filename, () => {
     );
   });
 
-  it(`sends a server redirect when username parameter case is not the same as the collection's author name`, () => {
+  it('sends a server redirect when username parameter is not a numeric ID', () => {
     const clientApp = CLIENT_APP_FIREFOX;
     const lang = 'fr';
+    const authorId = 123;
     const authorUsername = 'john';
 
     const { store } = dispatchClientMetadata({ clientApp, lang });
     const fakeDispatch = sinon.spy(store, 'dispatch');
 
     const collectionAddons = createFakeCollectionAddons();
-    const collectionDetail = createFakeCollectionDetail({ authorUsername });
+    const collectionDetail = createFakeCollectionDetail({
+      authorId,
+      authorUsername,
+    });
 
     _loadCurrentCollection({
       store,
@@ -1399,7 +1402,7 @@ describe(__filename, () => {
       fakeDispatch,
       sendServerRedirect({
         status: 301,
-        url: `/${lang}/${clientApp}/collections/${collection.authorUsername}/${
+        url: `/${lang}/${clientApp}/collections/${collection.authorId}/${
           collection.slug
         }/`,
       }),
@@ -1438,7 +1441,7 @@ describe(__filename, () => {
       fakeDispatch,
       sendServerRedirect({
         status: 301,
-        url: `/${lang}/${clientApp}/collections/${collection.authorUsername}/${
+        url: `/${lang}/${clientApp}/collections/${collection.authorId}/${
           collection.slug
         }/`,
       }),
